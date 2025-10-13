@@ -10,8 +10,14 @@ const SignUp: FC = () => {
       <Box component="form" display="flex" flexDirection="column" gap={2}>
         <TextField label="Username" variant="outlined" />
         <TextField label="Password" type="password" variant="outlined" />
-        <TextField label="Confirm Password" type="password" variant="outlined" />
-        <Button variant="contained" color="primary">Register</Button>
+        <TextField
+          label="Confirm Password"
+          type="password"
+          variant="outlined"
+        />
+        <Button variant="contained" color="primary">
+          Register
+        </Button>
       </Box>
     </Container>
   );

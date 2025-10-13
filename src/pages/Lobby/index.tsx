@@ -11,7 +11,12 @@ const Lobby: FC = () => {
         Lobby: {roomId}
       </Typography>
       <Typography mb={2}>Players, teams, and chat will be here.</Typography>
-      <Button component={Link} to="/game/456" variant="contained" color="success">
+      <Button
+        component={Link}
+        to="/game/456"
+        variant="contained"
+        color="success"
+      >
         Start Game Example
       </Button>
     </Container>

@@ -8,9 +8,16 @@ const Main: FC = () => {
       <Typography variant="h4" fontWeight="bold" gutterBottom>
         Dashboard
       </Typography>
-      <Typography mb={2}>List of rooms or create/join buttons go here</Typography>
+      <Typography mb={2}>
+        List of rooms or create/join buttons go here
+      </Typography>
       <Stack direction="row" spacing={2}>
-        <Button component={Link} to="/lobby/123" variant="contained" color="primary">
+        <Button
+          component={Link}
+          to="/lobby/123"
+          variant="contained"
+          color="primary"
+        >
           Enter Lobby Example
         </Button>
       </Stack>
