@@ -1,28 +1,81 @@
-import { Container, Typography, Button, Stack } from '@mui/material';
-import type { FC } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  Box,
+  Button,
+  Container,
+  TextField,
+  Typography,
+  List,
+  ListItem,
+  ListItemText,
+  Paper,
+} from '@mui/material';
 
-const Main: FC = () => {
+import { getRooms, createRoom } from '../../api/room';
+import type { Room } from '../../types/types';
+
+const MainPage = () => {
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [newRoomName, setNewRoomName] = useState<string>('');
+  const navigate = useNavigate();
+  const userId = '651234567890abcdef123456';
+
+  const fetchRooms = async (): Promise<void> => {
+    const res = await getRooms();
+    setRooms(res.data);
+  };
+
+  const handleCreateRoom = async (): Promise<void> => {
+    if (!newRoomName) return;
+    await createRoom(newRoomName, userId);
+    setNewRoomName('');
+    fetchRooms();
+  };
+
+  useEffect(() => {
+    fetchRooms();
+  }, []);
+
   return (
-    <Container maxWidth="md" sx={{ mt: 8 }}>
-      <Typography variant="h4" fontWeight="bold" gutterBottom>
-        Dashboard
+    <Container sx={{ mt: 4 }}>
+      <Typography variant="h4" gutterBottom>
+        Rooms
       </Typography>
-      <Typography mb={2}>
-        List of rooms or create/join buttons go here
-      </Typography>
-      <Stack direction="row" spacing={2}>
-        <Button
-          component={Link}
-          to="/lobby/123"
-          variant="contained"
-          color="primary"
-        >
-          Enter Lobby Example
+      <Box sx={{ display: 'flex', mb: 3 }}>
+        <TextField
+          value={newRoomName}
+          onChange={(e) => setNewRoomName(e.target.value)}
+          label="New room"
+          variant="outlined"
+          sx={{ mr: 2, flex: 1 }}
+        />
+        <Button variant="contained" color="primary" onClick={handleCreateRoom}>
+          Create Room
         </Button>
-      </Stack>
+      </Box>
+
+      <List>
+        {rooms.map((room) => (
+          <Paper key={room._id} sx={{ mb: 1 }}>
+            <ListItem
+              secondaryAction={
+                <Button
+                  variant="contained"
+                  color="success"
+                  onClick={() => navigate(`/room/${room._id}`)}
+                >
+                  Join Room
+                </Button>
+              }
+            >
+              <ListItemText primary={room.name} />
+            </ListItem>
+          </Paper>
+        ))}
+      </List>
     </Container>
   );
 };
 
-export default Main;
+export default MainPage;
