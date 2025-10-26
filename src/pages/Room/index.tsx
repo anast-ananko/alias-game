@@ -31,7 +31,7 @@ const RoomPage = () => {
     const fetchRoom = async () => {
       try {
         const res = await getRoomById(id!);
-        setRoom(res.data);
+        setRoom(res);
       } catch (error) {
         console.error('Error loading room:', error);
       } finally {

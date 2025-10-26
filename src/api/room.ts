@@ -1,11 +1,24 @@
-import axios from 'axios';
+import { client } from './axios';
+import type { Room } from '../types/types';
 
-const api = axios.create({
-  baseURL: 'http://localhost:3000/rooms',
-});
+export const getRooms = async (): Promise<Room[]> => {
+  const response = await client.get<Room[]>('/rooms');
+  return response.data;
+};
 
-export const getRooms = () => api.get('/');
-export const createRoom = (name: string, createdBy: string) =>
-  api.post('/', { name, createdBy });
-export const getRoomById = (id: string) => api.get(`/${id}`);
-export const deleteRoom = (id: string) => api.delete(`/${id}`);
+export const createRoom = async (
+  name: string,
+  createdBy: string
+): Promise<Room> => {
+  const response = await client.post<Room>('/rooms', { name, createdBy });
+  return response.data;
+};
+
+export const getRoomById = async (id: string): Promise<Room> => {
+  const response = await client.get<Room>(`/rooms/${id}`);
+  return response.data;
+};
+
+export const deleteRoom = async (id: string): Promise<void> => {
+  await client.delete(`/rooms/${id}`);
+};
