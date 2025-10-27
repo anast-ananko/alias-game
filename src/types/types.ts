@@ -2,6 +2,7 @@ export interface User {
   _id: string;
   email: string;
   username: string;
+  avatarUrl: string;
   totalGames: number;
   totalWins: number;
 }
@@ -10,16 +11,28 @@ export interface Team {
   _id: string;
   name: string;
   score: number;
-  players: string[];
+  players: {
+    _id: string;
+    username: string;
+    email: string;
+  }[];
 }
 
 export interface Room {
   _id: string;
   name: string;
-  members: string[];
+  members: {
+    _id: string;
+    username: string;
+    email: string;
+    avatarUrl: string;
+  }[];
   phase: 'waiting' | 'inGame' | 'finished';
   activeGameId: string | null;
-  createdBy: string;
+  createdBy: {
+    _id: string;
+    username: string;
+  };
   teams: Team[];
 }
 

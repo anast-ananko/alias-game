@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type FC } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -14,20 +14,23 @@ import {
 
 import { getRooms, createRoom } from '../../api/room';
 import type { Room } from '../../types/types';
+import { useAuth } from '../../context/AuthContext';
 
-const MainPage = () => {
+const MainPage: FC = () => {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [newRoomName, setNewRoomName] = useState<string>('');
   const navigate = useNavigate();
-  const userId = '651234567890abcdef123456';
+
+  const { user } = useAuth();
+  const userId = user?._id;
 
   const fetchRooms = async (): Promise<void> => {
     const res = await getRooms();
-    setRooms(res.data);
+    setRooms(res);
   };
 
   const handleCreateRoom = async (): Promise<void> => {
-    if (!newRoomName) return;
+    if (!newRoomName || !userId) return;
     await createRoom(newRoomName, userId);
     setNewRoomName('');
     fetchRooms();

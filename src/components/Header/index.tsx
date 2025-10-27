@@ -5,11 +5,22 @@ import {
   Button,
   Box,
   Container,
+  Avatar,
 } from '@mui/material';
 import type { FC } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+
+import { useAuth } from '../../context/AuthContext';
 
 const Header: FC = () => {
+  const { isLoggedIn, user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = (): void => {
+    logout();
+    navigate('/sign-in');
+  };
+
   return (
     <AppBar position="static" color="primary">
       <Container maxWidth="lg">
@@ -23,16 +34,34 @@ const Header: FC = () => {
             Alias Game
           </Typography>
 
-          <Box>
+          <Box display="flex" gap={2} alignContent="center">
             <Button color="inherit" component={Link} to="/main">
               Main
             </Button>
-            <Button color="inherit" component={Link} to="/sign-in">
-              Sign In
-            </Button>
-            <Button color="inherit" component={Link} to="/sign-up">
-              Sign Up
-            </Button>
+            {!isLoggedIn ? (
+              <>
+                <Button color="inherit" component={Link} to="/sign-in">
+                  Sign In
+                </Button>
+                <Button color="inherit" component={Link} to="/sign-up">
+                  Sign Up
+                </Button>
+              </>
+            ) : (
+              <>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Avatar
+                    src={user?.avatarUrl}
+                    alt={user?.username}
+                    sx={{ width: 32, height: 32 }}
+                  />
+                  <Typography variant="body1">{user?.username}</Typography>
+                </Box>
+                <Button color="inherit" onClick={handleLogout}>
+                  Logout
+                </Button>
+              </>
+            )}
           </Box>
         </Toolbar>
       </Container>

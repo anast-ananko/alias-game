@@ -16,7 +16,7 @@ export const signUp = async (data: SignUpDto) => {
   return res.data;
 };
 
-export const login = async (data: LoginDto) => {
+export const signIn = async (data: LoginDto) => {
   const res = await api.post<LoginResponse>('/auth/login', data, {
     withCredentials: true,
   });

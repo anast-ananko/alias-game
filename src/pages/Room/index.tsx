@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type FC } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -13,19 +13,23 @@ import {
   Chip,
   Divider,
   CircularProgress,
+  Avatar,
 } from '@mui/material';
 
 import { socket } from '../../socket';
 import { getRoomById } from '../../api/room';
 import type { Room } from '../../types/types';
+import { useAuth } from '../../context/AuthContext';
 
-const RoomPage = () => {
+const RoomPage: FC = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const [room, setRoom] = useState<Room | null>(null);
   const [loading, setLoading] = useState(true);
   const [teamName, setTeamName] = useState('');
-  const userId = '651234567890abcdef123456'; // remove after auth will be implemented
+  const navigate = useNavigate();
+
+  const { user } = useAuth();
+  const userId = user?._id;
 
   useEffect(() => {
     const fetchRoom = async () => {
@@ -44,6 +48,8 @@ const RoomPage = () => {
 
   useEffect(() => {
     if (!id) return;
+
+    localStorage.setItem('currentRoomId', id);
 
     socket.connect();
     socket.emit('room:join', { roomId: id, userId });
@@ -66,9 +72,9 @@ const RoomPage = () => {
 
     socket.on('ws-error', console.error);
 
-      return () => {
-        socket.disconnect();
-      };
+    return () => {
+      socket.disconnect();
+    };
   }, [id]);
 
   if (loading)
@@ -86,12 +92,14 @@ const RoomPage = () => {
       </Container>
     );
 
-  const userTeam = room.teams.find((t) => t.players.includes(userId));
+  const userTeam = userId
+    ? room.teams?.find((t) => t.players.some((p) => p._id === userId))
+    : undefined;
 
   const handleLeaveRoom = () => {
     if (!room?._id) return;
     socket.emit('room:leave', { roomId: room._id, userId });
-    navigate('/');
+    navigate('/main');
   };
 
   const handleCreateTeam = () => {
@@ -104,7 +112,6 @@ const RoomPage = () => {
   };
 
   const handleDeleteTeam = (teamId: string) => {
-    // add some rules, e.x. only admin can delete team or owner of the team
     socket.emit('team:delete', {
       roomId: id,
       teamId,
@@ -132,7 +139,7 @@ const RoomPage = () => {
         {room.name}
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-        Created by: {room.createdBy || 'Unknown'}
+        Created by: {room.createdBy?.username ?? 'Unknown'}
       </Typography>
       <Button
         variant="outlined"
@@ -147,7 +154,15 @@ const RoomPage = () => {
         <Typography variant="h6">Status</Typography>
         {userTeam ? (
           <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-            <Typography>You are in team: {userTeam.name}</Typography>
+            <Typography>
+              You are in team:{' '}
+              <Box
+                component="span"
+                sx={{ fontWeight: 'bold', color: 'primary.main' }}
+              >
+                {userTeam.name}
+              </Box>
+            </Typography>
             <Button
               variant="outlined"
               color="error"
@@ -165,12 +180,12 @@ const RoomPage = () => {
       <Box sx={{ mb: 3 }}>
         <Typography variant="h5">Teams</Typography>
         <List>
-          {room.teams.map((team) => (
+          {room.teams?.map((team) => (
             <Paper key={team._id} sx={{ mb: 1, p: 1 }}>
               <ListItem
                 secondaryAction={
                   <Box sx={{ display: 'flex', gap: 1 }}>
-                    {!team.players.includes(userId) && (
+                    {userId && !team.players.some((p) => p._id === userId) && (
                       <Button
                         variant="contained"
                         color="success"
@@ -183,6 +198,7 @@ const RoomPage = () => {
                       variant="outlined"
                       color="error"
                       onClick={() => handleDeleteTeam(team._id)}
+                      disabled={room.createdBy._id !== userId}
                     >
                       Delete
                     </Button>
@@ -197,9 +213,11 @@ const RoomPage = () => {
                     >
                       {team.players.map((p) => (
                         <Chip
-                          key={p}
-                          label={p + (p === userId ? ' (You)' : '')}
-                          color={p === userId ? 'primary' : 'default'}
+                          key={p._id}
+                          label={
+                            p.username + (p._id === userId ? ' (You)' : '')
+                          }
+                          color={p._id === userId ? 'primary' : 'default'}
                           size="small"
                         />
                       ))}
@@ -228,8 +246,25 @@ const RoomPage = () => {
       <Paper sx={{ p: 2, mb: 3 }}>
         <Typography variant="h6">All players</Typography>
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1 }}>
-          {room.members.map((m: any) => (
-            <Chip key={m.toString()} label={m.toString()} />
+          {room.members.map((m) => (
+            <Box
+              key={m._id}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.5,
+                padding: '2px 6px',
+                borderRadius: 1,
+                backgroundColor: 'rgba(0,0,0,0.05)',
+              }}
+            >
+              <Avatar
+                src={m.avatarUrl}
+                alt={m.username}
+                sx={{ width: 20, height: 20 }}
+              />
+              <Typography variant="body2">{m.username}</Typography>
+            </Box>
           ))}
         </Box>
       </Paper>

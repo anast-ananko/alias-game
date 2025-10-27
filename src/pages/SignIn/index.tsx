@@ -1,20 +1,26 @@
-import { useState } from 'react';
+import { useState, type FC } from 'react';
 import { Container, Typography, Box, TextField, Button } from '@mui/material';
-import { login } from '../../api/auth';
 import axios from 'axios';
 
-const SignIn= () => {
+import { signIn } from '../../api/auth';
+import { useAuth } from '../../context/AuthContext';
+
+const SignIn: FC = () => {
   const [usernameOrEmail, setUsernameOrEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
+  const { login } = useAuth();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      const data = await login({ usernameOrEmail, password });
+      const { user, accessToken } = await signIn({ usernameOrEmail, password });
+
+      login(user, accessToken);
 
       setSuccessMessage('Logged in successfully!');
       setErrorMessage('');
@@ -24,7 +30,7 @@ const SignIn= () => {
 
       setTimeout(() => setSuccessMessage(''), 5000);
 
-      console.log('✅ Logged in successfully:', data);
+      console.log('✅ Logged in successfully:', { user, accessToken });
     } catch (err) {
       if (axios.isAxiosError(err)) {
         setErrorMessage(err.response?.data?.message || 'Login failed');
