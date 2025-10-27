@@ -18,8 +18,6 @@ import {
 import { socket } from '../../socket';
 import { getRoomById } from '../../api/room';
 import type { Room } from '../../types/types';
-import Chat from '../../components/Chat';
-import { useAuth } from '../../hooks';
 
 const RoomPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -27,10 +25,7 @@ const RoomPage = () => {
   const [room, setRoom] = useState<Room | null>(null);
   const [loading, setLoading] = useState(true);
   const [teamName, setTeamName] = useState('');
-  const context = useAuth();
-  const userId = localStorage.getItem('userId')!; // remove after auth will be implemented
-
-  console.log('context', context)
+  const userId = '651234567890abcdef123456'; // remove after auth will be implemented
 
   useEffect(() => {
     const fetchRoom = async () => {
@@ -71,9 +66,9 @@ const RoomPage = () => {
 
     socket.on('ws-error', console.error);
 
-    return () => {
-      socket.disconnect();
-    };
+      return () => {
+        socket.disconnect();
+      };
   }, [id]);
 
   if (loading)
@@ -243,8 +238,6 @@ const RoomPage = () => {
       <Button variant="contained" color="success" onClick={handleStartGame}>
         Start
       </Button>
-
-      <Chat userId={userId} roomId={room._id} />
     </Container>
   );
 };
