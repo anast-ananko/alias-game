@@ -1,13 +1,12 @@
 import axios from 'axios';
-// import { APP_ENV } from '../config';
+import { APP_ENV } from '../config';
 
-// const baseURL = APP_ENV.API_URL;
-const baseURL = 'http://localhost:3000';
+const baseURL = APP_ENV.API_URL;
 
 // use client for protected routes
 // use api for all other routes
-const client = axios.create({ baseURL });
-const api = axios.create({ baseURL });
+const client = axios.create({ baseURL, withCredentials: true });
+const api = axios.create({ baseURL, withCredentials: true });
 
 // Request interceptor to attach access token
 client.interceptors.request.use((config) => {
@@ -29,18 +28,13 @@ client.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const response = await axios.post(
-          `${baseURL}/auth/refresh`,
-          {},
-          { withCredentials: true }
-        );
+        const { data } = await api.post('/auth/refresh');
 
-        const { accessToken: newAccessToken } = response.data;
-        localStorage.setItem('accessToken', newAccessToken);
+        localStorage.setItem('accessToken', data.accessToken);
 
-        // Retry original request with new token
-        originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
-        return client(originalRequest);
+        // Retry request with new token
+        originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
+        return api(originalRequest);
       } catch (err) {
         // Refresh failed: remove token
         localStorage.removeItem('accessToken');
