@@ -3,6 +3,7 @@ import { AuthContext } from './AuthContext';
 import { authApi } from '../api';
 import type { SignInFormData, SignUpFormData } from '../forms/auth';
 import type { User } from '../types';
+import Loader from '../components/Loader';
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -31,6 +32,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setIsLoading(true);
     try {
       const data = await authApi.signUp(signupDto);
+      localStorage.setItem('accessToken', data.accessToken);
       setUser(data.user);
       setError(null);
     } catch (err: unknown) {
@@ -70,6 +72,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setIsLoading(true);
     try {
       await authApi.logout();
+      localStorage.removeItem('accessToken');
       setUser(null);
       setError(null);
     } catch (err: unknown) {
@@ -103,7 +106,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         isAuthenticated,
       }}
     >
-      {children}
+      {isLoading ? <Loader /> : children}
     </AuthContext.Provider>
   );
 };
