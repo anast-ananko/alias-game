@@ -7,9 +7,18 @@ import {
   Container,
 } from '@mui/material';
 import type { FC } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../hooks';
 
 const Header: FC = () => {
+  const { isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLougout = async () => {
+    await logout();
+    navigate('/', { replace: true });
+  };
+
   return (
     <AppBar position="static" color="primary">
       <Container maxWidth="lg">
@@ -24,15 +33,16 @@ const Header: FC = () => {
           </Typography>
 
           <Box>
-            <Button color="inherit" component={Link} to="/main">
-              Main
-            </Button>
-            <Button color="inherit" component={Link} to="/sign-in">
-              Sign In
-            </Button>
-            <Button color="inherit" component={Link} to="/sign-up">
-              Sign Up
-            </Button>
+            {isAuthenticated && (
+              <>
+                <Button color="inherit" component={Link} to="/main">
+                  Main
+                </Button>
+                <Button color="inherit" onClick={handleLougout}>
+                  Logout
+                </Button>
+              </>
+            )}
           </Box>
         </Toolbar>
       </Container>
