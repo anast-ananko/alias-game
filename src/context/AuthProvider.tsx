@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { AuthContext } from './AuthContext';
 import { authApi } from '../api';
 import type { SignInFormData, SignUpFormData } from '../forms/auth';
@@ -11,23 +11,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchCurrentUser = async () => {
-    setIsLoading(true);
-    try {
-      const data = await authApi.getProfile();
-      setUser(data);
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        console.error(err);
-        setUser(null);
-        setError(err.message || 'Failed to fetch user');
-      } else {
-        setError('An unknow error occurred');
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // const fetchCurrentUser = async () => {
+  //   setIsLoading(true);
+  //   try {
+  //     const data = await authApi.getProfile();
+  //     setUser(data);
+  //   } catch (err: unknown) {
+  //     if (err instanceof Error) {
+  //       console.error(err);
+  //       setUser(null);
+  //       setError(err.message || 'Failed to fetch user');
+  //     } else {
+  //       setError('An unknow error occurred');
+  //     }
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   const signup = async (signupDto: SignUpFormData) => {
     setIsLoading(true);
@@ -102,9 +102,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const isAuthenticated = !!user;
 
-  useEffect(() => {
-    fetchCurrentUser();
-  }, []);
+  // useEffect(() => {
+  //   fetchCurrentUser();
+  // }, []);
 
   return (
     <AuthContext.Provider
