@@ -11,6 +11,12 @@ const api = axios.create({ baseURL, withCredentials: true });
 // Request interceptor to attach access token
 client.interceptors.request.use((config) => {
   const accessToken = localStorage.getItem('accessToken');
+
+  if (!accessToken) {
+    // Abort the request
+    return Promise.reject({ message: 'No access token', config });
+  }
+
   if (accessToken && config.headers) {
     config.headers.Authorization = `Bearer ${accessToken}`;
   }

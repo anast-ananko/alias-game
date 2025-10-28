@@ -13,7 +13,6 @@ export const signUp = async (data: SignUpDto) => {
   const res = await api.post<SignUpResponse>('/auth/signup', data, {
     withCredentials: true,
   });
-  localStorage.setItem('accessToken', res.data.accessToken);
   return res.data;
 };
 
@@ -21,7 +20,6 @@ export const login = async (data: LoginDto) => {
   const res = await api.post<LoginResponse>('/auth/login', data, {
     withCredentials: true,
   });
-  localStorage.setItem('accessToken', res.data.accessToken);
   return res.data;
 };
 
@@ -41,7 +39,6 @@ export const changePassword = async (data: ChangePasswordDto) => {
 };
 
 export const logout = async () => {
-  localStorage.removeItem('accessToken');
   await client.get('/auth/logout', { withCredentials: true });
 };
 
