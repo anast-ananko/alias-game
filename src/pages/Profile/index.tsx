@@ -12,8 +12,8 @@ import {
 } from '@mui/material';
 
 import { updateProfile, changePassword } from '../../api/auth';
-import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
+import { useAuth } from '../../hooks/useAuth';
 
 const ProfilePage = () => {
   const { user, updateUser } = useAuth();

@@ -14,7 +14,8 @@ import {
 
 import { getRooms, createRoom } from '../../api/room';
 import type { Room } from '../../types/types';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
+
 
 const MainPage: FC = () => {
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -26,6 +27,7 @@ const MainPage: FC = () => {
 
   const fetchRooms = async (): Promise<void> => {
     const res = await getRooms();
+    console.log(res)
     setRooms(res);
   };
 

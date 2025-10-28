@@ -19,7 +19,7 @@ import {
 import { socket } from '../../socket';
 import { getRoomById } from '../../api/room';
 import type { Room } from '../../types/types';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 
 const RoomPage: FC = () => {
   const { id } = useParams<{ id: string }>();

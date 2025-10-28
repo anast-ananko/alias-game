@@ -1,58 +1,44 @@
-import React, { useState } from 'react';
+import { useEffect, type FC } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Container, Typography, Box, TextField, Button } from '@mui/material';
+
 import {
-  Alert,
-  Box,
-  Button,
-  Container,
-  TextField,
-  Typography,
-} from '@mui/material';
-import { signUp } from '../../api/auth';
-import { isAxiosError } from 'axios';
+  SIGNUP_FIELDS,
+  signUpSchema,
+  type SignUpFormData,
+} from '../../forms/auth';
+import { useAuth } from '../../hooks/useAuth';
 
-const SignUpPage = () => {
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+const SignUpPage: FC = () => {
+  const { signup, error, setError } = useAuth();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMessage(null);
-    setSuccessMessage(null);
+  const {
+    handleSubmit,
+    control,
+    formState: { errors },
+    watch,
+  } = useForm<SignUpFormData>({
+    resolver: zodResolver(signUpSchema),
+    defaultValues: {
+      email: '',
+      username: '',
+      password: '',
+      confirmPassword: '',
+    },
+  });
 
-    if (password !== confirmPassword) {
-      setErrorMessage('Passwords do not match');
-      return;
+  useEffect(() => {
+    if (error) {
+      const subscription = watch(() => {
+        setError(null);
+      });
+      return () => subscription.unsubscribe();
     }
+  }, [error, watch, setError]);
 
-    try {
-      const data = await signUp({ username, email, password });
-
-      setSuccessMessage('Registered successfully!');
-
-      setErrorMessage('');
-
-      setUsername('');
-      setEmail('');
-      setPassword('');
-      setConfirmPassword('');
-
-      setTimeout(() => setSuccessMessage(''), 5000);
-
-    } catch (err) {
-      if (isAxiosError(err)) {
-        setErrorMessage(err.response?.data?.message || 'Registration failed');
-      } else if (err instanceof Error) {
-        setErrorMessage(err.message);
-      } else {
-        setErrorMessage('Registration failed');
-      }
-
-      setSuccessMessage('');
-    }
+  const onSubmit = async (formData: SignUpFormData) => {
+    await signup(formData);
   };
 
   return (
@@ -65,50 +51,36 @@ const SignUpPage = () => {
         display="flex"
         flexDirection="column"
         gap={2}
-        onSubmit={handleSubmit}
+        onSubmit={handleSubmit(onSubmit)}
       >
-        <TextField
-          label="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          required
-        />
-        <TextField
-          label="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <TextField
-          label="Password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <TextField
-          label="Confirm Password"
-          type="password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          required
-        />
+        {SIGNUP_FIELDS.map((field) => (
+          <Controller
+            key={field.name}
+            name={field.name}
+            control={control}
+            render={({ field: controllerField }) => (
+              <TextField
+                {...controllerField}
+                label={field.label}
+                type={field.type}
+                autoComplete={field.autoComplete}
+                variant="outlined"
+                error={!!errors[field.name]}
+                helperText={errors[field.name]?.message}
+              />
+            )}
+          />
+        ))}
 
-        {errorMessage && (
-          <Alert severity="error">
-            {errorMessage}
-          </Alert>
-        )}
-        {successMessage && (
-          <Alert severity="success">
-            {successMessage}
-          </Alert>
+        {error && (
+          <Typography color="error.main" variant="body2">
+            {error}{' '}
+          </Typography>
         )}
 
-        <Button variant="contained" color="primary" type="submit">
+        <Button type="submit" variant="contained" color="primary">
           Register
         </Button>
-
       </Box>
     </Container>
   );

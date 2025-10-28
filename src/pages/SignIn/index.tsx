@@ -1,45 +1,32 @@
-import { useState, type FC } from 'react';
+import type { FC } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Container, Typography, Box, TextField, Button } from '@mui/material';
-import axios from 'axios';
 
-import { signIn } from '../../api/auth';
-import { useAuth } from '../../context/AuthContext';
+import {
+  SIGNIN_FIELDS,
+  signInSchema,
+  type SignInFormData,
+} from '../../forms/auth';
+import { useAuth } from '../../hooks';
 
 const SignIn: FC = () => {
-  const [usernameOrEmail, setUsernameOrEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const { login, error } = useAuth();
 
-  const [errorMessage, setErrorMessage] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
+  const {
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm<SignInFormData>({
+    resolver: zodResolver(signInSchema),
+    defaultValues: {
+      usernameOrEmail: '',
+      password: '',
+    },
+  });
 
-  const { login } = useAuth();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    try {
-      const { user, accessToken } = await signIn({ usernameOrEmail, password });
-
-      login(user, accessToken);
-
-      setSuccessMessage('Logged in successfully!');
-      setErrorMessage('');
-
-      setUsernameOrEmail('');
-      setPassword('');
-
-      setTimeout(() => setSuccessMessage(''), 5000);
-    } catch (err) {
-      if (axios.isAxiosError(err)) {
-        setErrorMessage(err.response?.data?.message || 'Login failed');
-      } else if (err instanceof Error) {
-        setErrorMessage(err.message);
-      } else {
-        setErrorMessage('Login failed');
-      }
-
-      setSuccessMessage('');
-    }
+  const onSubmit = async (formData: SignInFormData) => {
+    await login(formData);
   };
 
   return (
@@ -52,34 +39,36 @@ const SignIn: FC = () => {
         display="flex"
         flexDirection="column"
         gap={2}
-        onSubmit={handleSubmit}
+        onSubmit={handleSubmit(onSubmit)}
       >
-        <TextField
-          label="Username or Email"
-          value={usernameOrEmail}
-          onChange={(e) => setUsernameOrEmail(e.target.value)}
-          required
-        />
-        <TextField
-          label="Password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <Button variant="contained" color="primary" type="submit">
+        {SIGNIN_FIELDS.map((field) => (
+          <Controller
+            key={field.name}
+            name={field.name}
+            control={control}
+            render={({ field: controllerField }) => (
+              <TextField
+                {...controllerField}
+                label={field.label}
+                type={field.type}
+                autoComplete={field.autoComplete}
+                variant="outlined"
+                error={!!errors[field.name]}
+                helperText={errors[field.name]?.message}
+              />
+            )}
+          />
+        ))}
+
+        {error && (
+          <Typography color="error.main" variant="body2">
+            {error}
+          </Typography>
+        )}
+
+        <Button type="submit" variant="contained" color="primary">
           Login
         </Button>
-        {errorMessage && (
-          <Typography color="error" variant="body2">
-            {errorMessage}
-          </Typography>
-        )}
-        {successMessage && (
-          <Typography color="success.main" variant="body2">
-            {successMessage}
-          </Typography>
-        )}
       </Box>
     </Container>
   );

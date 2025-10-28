@@ -9,11 +9,12 @@ import {
 } from '@mui/material';
 import type { FC } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
 
-import { useAuth } from '../../context/AuthContext';
+
 
 const Header: FC = () => {
-  const { isLoggedIn, user, logout } = useAuth();
+  const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = (): void => {
@@ -38,7 +39,7 @@ const Header: FC = () => {
             <Button color="inherit" component={Link} to="/main">
               Main
             </Button>
-            {!isLoggedIn ? (
+            {!isAuthenticated ? (
               <>
                 <Button color="inherit" component={Link} to="/sign-in">
                   Sign In

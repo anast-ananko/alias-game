@@ -5,6 +5,8 @@ export interface User {
   avatarUrl: string;
   totalGames: number;
   totalWins: number;
+  accessToken: string;
+  refreshToken: string;
 }
 
 export interface Team {
@@ -66,4 +68,13 @@ export interface LoginResponse {
 export interface SignUpResponse {
   user: User;
   accessToken: string;
+}
+
+export interface ChatMessage {
+  _id: string;
+  room: Pick<Room, '_id' | 'name'>;
+  user: Pick<User, '_id' | 'username' | 'avatarUrl'>;
+  content: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
