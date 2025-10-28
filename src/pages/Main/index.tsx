@@ -22,8 +22,8 @@ const MainPage = () => {
   const userId = '651234567890abcdef123456';
 
   const fetchRooms = async (): Promise<void> => {
-    const res = await getRooms();
-    setRooms(res.data);
+    const data = await getRooms();
+    setRooms(data);
   };
 
   const handleCreateRoom = async (): Promise<void> => {
