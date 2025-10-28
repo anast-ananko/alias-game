@@ -3,6 +3,7 @@ import type { Room } from '../types/types';
 
 export const getRooms = async (): Promise<Room[]> => {
   const response = await client.get<Room[]>('/rooms');
+  console.log(response)
   return response.data;
 };
 

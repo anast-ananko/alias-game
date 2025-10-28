@@ -1,30 +1,44 @@
-import type { FC } from 'react';
+import { useEffect, type FC } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Container, Typography, Box, TextField, Button } from '@mui/material';
+
 import {
   SIGNUP_FIELDS,
   signUpSchema,
   type SignUpFormData,
 } from '../../forms/auth';
+import { useAuth } from '../../hooks/useAuth';
 
 const SignUpPage: FC = () => {
+  const { signup, error, setError } = useAuth();
+
   const {
     handleSubmit,
     control,
     formState: { errors },
+    watch,
   } = useForm<SignUpFormData>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
       email: '',
       username: '',
       password: '',
+      confirmPassword: '',
     },
   });
 
-  const onSubmit = (formData: SignUpFormData) => {
-    console.log('Form Data:', formData);
-    // Add your registration logic here
+  useEffect(() => {
+    if (error) {
+      const subscription = watch(() => {
+        setError(null);
+      });
+      return () => subscription.unsubscribe();
+    }
+  }, [error, watch, setError]);
+
+  const onSubmit = async (formData: SignUpFormData) => {
+    await signup(formData);
   };
 
   return (
@@ -57,10 +71,16 @@ const SignUpPage: FC = () => {
             )}
           />
         ))}
+
+        {error && (
+          <Typography color="error.main" variant="body2">
+            {error}{' '}
+          </Typography>
+        )}
+
         <Button type="submit" variant="contained" color="primary">
           Register
         </Button>
-
       </Box>
     </Container>
   );

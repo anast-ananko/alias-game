@@ -10,6 +10,7 @@ import MainPage from './pages/Main';
 import NotFound from './pages/NotFound';
 import SignIn from './pages/SignIn';
 import SignUp from './pages/SignUp';
+import ProfilePage from './pages/Profile';
 import Layout from './components/Layout';
 import PrivateRoute from './components/PrivateRoute';
 import AuthRoute from './components/AuthRoute';
@@ -64,6 +65,14 @@ const router = createBrowserRouter(
         element={
           <PrivateRoute>
             <Game />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <PrivateRoute>
+            <ProfilePage />
           </PrivateRoute>
         }
       />

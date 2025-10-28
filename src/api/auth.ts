@@ -10,6 +10,7 @@ import type {
 import { api, client } from './axios';
 
 export const signUp = async (data: SignUpDto) => {
+  
   const res = await api.post<SignUpResponse>('/auth/signup', data, {
     withCredentials: true,
   });

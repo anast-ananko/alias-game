@@ -2,6 +2,7 @@ import type { FC } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Container, Typography, Box, TextField, Button } from '@mui/material';
+
 import {
   SIGNIN_FIELDS,
   signInSchema,
@@ -10,7 +11,7 @@ import {
 import { useAuth } from '../../hooks';
 
 const SignIn: FC = () => {
-  const { login } = useAuth();
+  const { login, error } = useAuth();
 
   const {
     handleSubmit,
@@ -58,6 +59,13 @@ const SignIn: FC = () => {
             )}
           />
         ))}
+
+        {error && (
+          <Typography color="error.main" variant="body2">
+            {error}
+          </Typography>
+        )}
+
         <Button type="submit" variant="contained" color="primary">
           Login
         </Button>
