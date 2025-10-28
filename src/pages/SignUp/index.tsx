@@ -42,7 +42,6 @@ const SignUpPage = () => {
 
       setTimeout(() => setSuccessMessage(''), 5000);
 
-      console.log('✅ Registered successfully:', data);
     } catch (err) {
       if (isAxiosError(err)) {
         setErrorMessage(err.response?.data?.message || 'Registration failed');

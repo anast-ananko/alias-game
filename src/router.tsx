@@ -11,6 +11,7 @@ import NotFound from './pages/NotFound';
 import SignIn from './pages/SignIn';
 import SignUp from './pages/SignUp';
 import Layout from './components/Layout';
+import ProfilePage from './pages/Profile';
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -23,6 +24,7 @@ const router = createBrowserRouter(
       <Route path="main" element={<MainPage />} />
       <Route path="room/:id" element={<RoomPage />} />
       <Route path="game/:gameId" element={<Game />} />
+      <Route path="/profile" element={<ProfilePage />} />
       {/* <Route path="results/:gameId" element={<Results />} /> */}
       {/* Catch-all */}
       <Route path="*" element={<NotFound />} />

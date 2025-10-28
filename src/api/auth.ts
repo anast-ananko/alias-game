@@ -23,10 +23,10 @@ export const signIn = async (data: LoginDto) => {
   return res.data;
 };
 
-export const getProfile = async (): Promise<User> => {
-  const response = await client.get<User>('/users/me');
-  return response.data;
-};
+// export const getProfile = async (): Promise<User> => {
+//   const response = await client.get<User>('/users/me');
+//   return response.data;
+// };
 
 export const updateProfile = async (data: UpdateProfileDto): Promise<User> => {
   const response = await client.patch<User>('/users/me', data);

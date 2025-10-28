@@ -7,6 +7,7 @@ interface AuthContextType {
   isLoggedIn: boolean;
   login: (userData: User, accessToken: string) => void;
   logout: () => void;
+  updateUser: (updatedUser: User) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -25,7 +26,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = () => {
     const user = JSON.parse(localStorage.getItem('user') || 'null');
-    const roomId = localStorage.getItem('currentRoomId'); 
+    const roomId = localStorage.getItem('currentRoomId');
 
     if (socket.connected && roomId && user?._id) {
       socket.emit('room:leave', { roomId, userId: user._id });
@@ -39,8 +40,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.removeItem('currentRoomId');
   };
 
+  const updateUser = (updatedUser: User) => {
+    setUser(updatedUser);
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+  };
+
   return (
-    <AuthContext.Provider value={{ user, isLoggedIn: !!user, login, logout }}>
+    <AuthContext.Provider
+      value={{ user, isLoggedIn: !!user, login, logout, updateUser }}
+    >
       {children}
     </AuthContext.Provider>
   );

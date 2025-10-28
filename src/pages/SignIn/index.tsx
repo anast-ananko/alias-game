@@ -29,8 +29,6 @@ const SignIn: FC = () => {
       setPassword('');
 
       setTimeout(() => setSuccessMessage(''), 5000);
-
-      console.log('✅ Logged in successfully:', { user, accessToken });
     } catch (err) {
       if (axios.isAxiosError(err)) {
         setErrorMessage(err.response?.data?.message || 'Login failed');
@@ -41,7 +39,6 @@ const SignIn: FC = () => {
       }
 
       setSuccessMessage('');
-      console.error(err);
     }
   };
 

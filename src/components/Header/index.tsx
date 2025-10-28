@@ -49,7 +49,23 @@ const Header: FC = () => {
               </>
             ) : (
               <>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                    px: 1,
+                    py: 0.5,
+                    borderRadius: 1,
+                    cursor: 'pointer',
+                    transition: 'background-color 0.2s ease',
+                    color: 'inherit',
+                    '&:hover': {
+                      backgroundColor: 'rgba(255, 255, 255, 0.08)', 
+                    },
+                  }}
+                  onClick={() => navigate('/profile')}
+                >
                   <Avatar
                     src={user?.avatarUrl}
                     alt={user?.username}
