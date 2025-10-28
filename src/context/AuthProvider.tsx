@@ -102,9 +102,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const isAuthenticated = !!user;
 
-  useEffect(() => {
-    fetchCurrentUser();
-  }, []);
+  // useEffect(() => {
+  //   fetchCurrentUser();
+  // }, []);
 
   return (
     <AuthContext.Provider
