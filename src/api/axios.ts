@@ -1,8 +1,7 @@
 import axios from 'axios';
-// import { APP_ENV } from '../config';
+import { APP_ENV } from '../config';
 
-// const baseURL = APP_ENV.API_URL;
-const baseURL = 'http://localhost:3000';
+const baseURL = APP_ENV.API_URL;
 
 // use client for protected routes
 // use api for all other routes

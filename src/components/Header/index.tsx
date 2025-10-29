@@ -9,16 +9,15 @@ import {
 } from '@mui/material';
 import type { FC } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+
 import { useAuth } from '../../hooks/useAuth';
-
-
 
 const Header: FC = () => {
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogout = (): void => {
-    logout();
+  const handleLogout = async (): Promise<void> => {
+    await logout();
     navigate('/sign-in');
   };
 
@@ -62,7 +61,7 @@ const Header: FC = () => {
                     transition: 'background-color 0.2s ease',
                     color: 'inherit',
                     '&:hover': {
-                      backgroundColor: 'rgba(255, 255, 255, 0.08)', 
+                      backgroundColor: 'rgba(255, 255, 255, 0.08)',
                     },
                   }}
                   onClick={() => navigate('/profile')}
