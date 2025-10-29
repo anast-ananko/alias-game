@@ -1,5 +1,6 @@
 import type { FC, ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
+
 import { useAuth } from '../../hooks';
 
 interface AuthRouteProps {
@@ -9,7 +10,9 @@ interface AuthRouteProps {
 const AuthRoute: FC<AuthRouteProps> = ({ children }) => {
   const { isAuthenticated } = useAuth();
 
-  if (isAuthenticated) {
+  const restrictedPaths = ['/','/sign-in', '/sign-up'];
+
+  if (isAuthenticated && restrictedPaths.includes(location.pathname)) {
     return <Navigate to="/main" replace />;
   }
 
