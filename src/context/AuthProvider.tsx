@@ -8,11 +8,8 @@ import axios from 'axios';
 import { socket } from '../socket';
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<User | null>(() => {
-    const saved = localStorage.getItem('user');
-    return saved ? JSON.parse(saved) : null;
-  });
-  const [isLoading, setIsLoading] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchCurrentUser = async () => {
@@ -25,8 +22,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setIsLoading(true);
     try {
       const data = await authApi.getProfile();
+      console.log(data);
       setUser(data);
-      localStorage.setItem('user', JSON.stringify(user));
     } catch (err: unknown) {
       if (err instanceof Error) {
         console.error(err);
@@ -47,7 +44,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(user);
       setError(null);
       localStorage.setItem('accessToken', accessToken);
-      localStorage.setItem('user', JSON.stringify(user));
     } catch (err) {
       if (axios.isAxiosError(err)) {
         const serverMessage = err.response?.data?.message;
@@ -71,7 +67,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(user);
       setError(null);
       localStorage.setItem('accessToken', accessToken);
-      localStorage.setItem('user', JSON.stringify(user));
     } catch (err) {
       if (axios.isAxiosError(err)) {
         const serverMessage = err.response?.data?.message;
@@ -89,7 +84,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const logout = async () => {
-    const user = JSON.parse(localStorage.getItem('user') || 'null');
     const roomId = localStorage.getItem('currentRoomId');
     if (socket.connected && roomId && user?._id) {
       socket.emit('room:leave', { roomId, userId: user._id });
@@ -100,7 +94,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       await authApi.logout();
       localStorage.removeItem('accessToken');
-      localStorage.removeItem('user');
       localStorage.removeItem('currentRoomId');
       setUser(null);
       setError(null);
@@ -119,7 +112,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const updateUser = (updatedUser: User) => {
     setUser(updatedUser);
-    localStorage.setItem('user', JSON.stringify(updatedUser));
   };
 
   const isAuthenticated = !!user;
