@@ -1,5 +1,4 @@
 import { useEffect, useState, useRef } from 'react';
-import { io, Socket } from 'socket.io-client';
 import {
   Box,
   Button,
@@ -10,53 +9,37 @@ import {
   ListItem,
   Avatar,
 } from '@mui/material';
+import { socket } from '../../socket';
 import { SOCKET_EVENTS } from '../../types/socket-events';
 import type { ChatProps } from './types';
-import { APP_ENV } from '../../config';
 import { getChatHistory } from '../../api/chat';
 import type { ChatMessage } from '../../types/types';
 import { useAuth } from '../../hooks';
 
-export default function Chat({
-  roomId,
-  socketUrl = APP_ENV.SOCKET_URL,
-}: ChatProps) {
+export default function Chat({ roomId }: ChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
-  const [socket, setSocket] = useState<Socket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const { user } = useAuth();
 
   useEffect(() => {
-    const accessToken = localStorage.getItem('accessToken');
-    if (!accessToken) return;
+    if (!socket.connected) {
+      socket.connect();
+    }
 
-    const socketIo: Socket = io(socketUrl, {
-      auth: { token: accessToken }, // ✅ send token via query
-      transports: ['websocket'], // force websocket
-    });
+    getChatHistory(roomId)
+      .then(({ data }) => setMessages(data.messages))
+      .catch((err) => console.error('Failed to load chat history:', err));
 
-    socketIo.on('connect', async () => {
-      console.log('✅ Connected to chat gateway', socketIo.id);
-
-      try {
-        const { data } = await getChatHistory(roomId);
-        setMessages(data.messages);
-      } catch (err) {
-        console.error('Failed to load chat history:', err);
-      }
-    });
-
-    socketIo.on(SOCKET_EVENTS.CHAT_MESSAGE, (msg: ChatMessage) => {
+    socket.on(SOCKET_EVENTS.CHAT_MESSAGE, (msg: ChatMessage) => {
       setMessages((prev) => [...prev, msg]);
     });
 
-    setSocket(socketIo);
-
     return () => {
-      socketIo.disconnect();
+      socket.off(SOCKET_EVENTS.CHAT_MESSAGE);
     };
-  }, [socketUrl, roomId]);
+  }, [roomId]);
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
