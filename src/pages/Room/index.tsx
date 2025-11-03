@@ -20,6 +20,7 @@ import { socket } from '../../socket';
 import { getRoomById } from '../../api/room';
 import type { Room } from '../../types/types';
 import { useAuth } from '../../hooks/useAuth';
+import Chat from '../../components/Chat';
 
 const RoomPage: FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -272,6 +273,12 @@ const RoomPage: FC = () => {
       </Paper>
       <Divider sx={{ my: 2 }} />
 
+      {userId && (
+        <Box sx={{ display: 'flex', mb: 2 }}>
+          <Chat roomId={room._id} />
+        </Box>
+      )}
+
       {/* <Button
         disabled={room.phase !== 'waiting'}
         variant="contained"
@@ -280,6 +287,7 @@ const RoomPage: FC = () => {
       >
         Start
       </Button> */}
+
       <Button variant="contained" color="success" onClick={handleStartGame}>
         Start
       </Button>
