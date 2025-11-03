@@ -20,6 +20,13 @@ export interface Team {
   }[];
 }
 
+export interface GameTeam {
+  id: string;
+  name: string;
+  score: number;
+  players: string[];
+}
+
 export interface Room {
   _id: string;
   name: string;
