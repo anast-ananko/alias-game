@@ -130,8 +130,8 @@ const RoomPage: FC = () => {
   };
 
   const handleStartGame = () => {
-    // add some rules to check before start
-    //socket.emit('room:start', { roomId: id, maxRounds: 5 });
+    socket.emit('room:start', { roomId: id, maxRounds: 5 });
+    navigate(`/room/${id}/game`);
   };
 
   return (
@@ -150,7 +150,6 @@ const RoomPage: FC = () => {
       >
         Leave room
       </Button>
-
       <Paper sx={{ p: 2, mb: 3 }}>
         <Typography variant="h6">Status</Typography>
         {userTeam ? (
@@ -177,7 +176,6 @@ const RoomPage: FC = () => {
           <Typography sx={{ mt: 1 }}>You are not in team</Typography>
         )}
       </Paper>
-
       <Box sx={{ mb: 3 }}>
         <Typography variant="h5">Teams</Typography>
         <List>
@@ -210,7 +208,12 @@ const RoomPage: FC = () => {
                   primary={team.name}
                   secondary={
                     <Box
-                      sx={{ display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap' }}
+                      sx={{
+                        display: 'flex',
+                        gap: 1,
+                        mt: 1,
+                        flexWrap: 'wrap',
+                      }}
                     >
                       {team.players.map((p) => (
                         <Chip
@@ -243,7 +246,6 @@ const RoomPage: FC = () => {
           </Button>
         </Box>
       </Box>
-
       <Paper sx={{ p: 2, mb: 3 }}>
         <Typography variant="h6">All players</Typography>
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1 }}>
@@ -269,7 +271,6 @@ const RoomPage: FC = () => {
           ))}
         </Box>
       </Paper>
-
       <Divider sx={{ my: 2 }} />
 
       {userId && (
@@ -277,6 +278,15 @@ const RoomPage: FC = () => {
           <Chat roomId={room._id} />
         </Box>
       )}
+
+      {/* <Button
+        disabled={room.phase !== 'waiting'}
+        variant="contained"
+        color="success"
+        onClick={handleStartGame}
+      >
+        Start
+      </Button> */}
 
       <Button variant="contained" color="success" onClick={handleStartGame}>
         Start

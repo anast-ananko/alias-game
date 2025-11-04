@@ -14,6 +14,8 @@ import ProfilePage from './pages/Profile';
 import Layout from './components/Layout';
 import PrivateRoute from './components/PrivateRoute';
 import AuthRoute from './components/AuthRoute';
+import GamePage from './pages/Game';
+import { GameProvider } from './context/GameContext';
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -73,6 +75,16 @@ const router = createBrowserRouter(
         element={
           <PrivateRoute>
             <ProfilePage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/room/:id/game"
+        element={
+          <PrivateRoute>
+            <GameProvider>
+              <GamePage />
+            </GameProvider>
           </PrivateRoute>
         }
       />
