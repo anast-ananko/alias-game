@@ -13,16 +13,22 @@ import {
   Chip,
 } from '@mui/material';
 import { useGame, type ClientGameState } from '../../context/GameContext';
-import { startRound, submitGuess, endGame } from '../../api/game';
 import { useAuth } from '../../hooks/useAuth';
 import type { GameTeam } from '../../types';
+import Chat from '../../components/Chat';
 
 const GamePage = () => {
   const { id: roomId } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
   const { user } = useAuth();
-  const { game, startRoundHandler, startNextTurn } = useGame();
+  const {
+    game,
+    startRoundHandler,
+    startNextTurn,
+    submitGuessHandler,
+    endGameHandler,
+  } = useGame();
 
   const [guess, setGuess] = useState('');
   const [messages, setMessages] = useState<{ user: string; text: string }[]>(
@@ -36,8 +42,6 @@ const GamePage = () => {
   const currentTeam: GameTeam | undefined = game?.teams[currentTeamIndex];
 
   const isMyTurn = !!user && !!currentTeam?.players.some((p) => p === user._id);
-  console.log(currentTeam);
-  console.log(game);
 
   useEffect(() => {
     if (!game?.turn?.endsAt) return;
@@ -61,7 +65,6 @@ const GamePage = () => {
     if (!game) return;
 
     const team = game.teams[game.currentTeamIndex || 0];
-    console.log(team);
     if (!team) return;
 
     startNextTurn(team.id, 10);
@@ -73,19 +76,27 @@ const GamePage = () => {
   // };
 
   const handleGuess = async () => {
-    if (!guess.trim() || !currentTeamIndex) return;
+    // if (!game?.turn?.teamId) return;
 
-    await submitGuess(roomId, {
-      teamId: currentTeamIndex.toString(),
-      wordText: currentWord ?? '',
+    // await submitGuessHandler({
+    //   teamId: game.turn.teamId,
+    //   wordText: currentWord ?? '',
+    //   guessText: guess,
+    // });
+
+    submitGuessHandler({
+      teamId: '6905f981d1e8742192e8fdc5',
+      wordText: 'mamba',
       guessText: guess,
     });
 
     setGuess('');
+
+    console.log(1);
   };
 
   const handleEndGame = async () => {
-    await endGame(roomId);
+    await endGameHandler();
     navigate(`/room/${roomId}`);
   };
 
@@ -125,32 +136,6 @@ const GamePage = () => {
           <Typography variant="body1" color="secondary">
             Word to guess: {game.currentWord}
           </Typography>
-        )}
-      </Paper>
-
-      <Paper sx={{ p: 2, mb: 3, maxHeight: 250, overflowY: 'auto' }}>
-        <Typography variant="h6">Chat / Log</Typography>
-        <List dense>
-          {messages.map((m, i) => (
-            <ListItem key={i}>
-              <ListItemText primary={`${m.user}: ${m.text}`} />
-            </ListItem>
-          ))}
-        </List>
-
-        {isMyTurn && (
-          <Box sx={{ display: 'flex', mt: 1 }}>
-            <TextField
-              fullWidth
-              size="small"
-              value={guess}
-              onChange={(e) => setGuess(e.target.value)}
-              placeholder="Type your guess..."
-            />
-            <Button variant="contained" sx={{ ml: 1 }} onClick={handleGuess}>
-              Send
-            </Button>
-          </Box>
         )}
       </Paper>
 
@@ -196,6 +181,34 @@ const GamePage = () => {
           End Game
         </Button>
       </Box>
+
+      <Paper sx={{ p: 2, my: 3, maxHeight: 250, overflowY: 'auto' }}>
+        <Typography variant="h6">Guess</Typography>
+        <List dense>
+          {messages.map((m, i) => (
+            <ListItem key={i}>
+              <ListItemText primary={`${m.user}: ${m.text}`} />
+            </ListItem>
+          ))}
+        </List>
+
+        {isMyTurn && (
+          <Box sx={{ display: 'flex', mt: 1 }}>
+            <TextField
+              fullWidth
+              size="small"
+              value={guess}
+              onChange={(e) => setGuess(e.target.value)}
+              placeholder="Type your guess..."
+            />
+            <Button variant="contained" sx={{ ml: 1 }} onClick={handleGuess}>
+              Send
+            </Button>
+          </Box>
+        )}
+      </Paper>
+
+      <Chat roomId={roomId} />
     </Container>
   );
 };

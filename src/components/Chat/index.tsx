@@ -59,6 +59,7 @@ export default function Chat({ roomId }: ChatProps) {
     <Paper
       sx={{
         width: 400,
+        my: 2,
         p: 2,
         display: 'flex',
         flexDirection: 'column',

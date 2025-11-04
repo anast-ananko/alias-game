@@ -109,13 +109,10 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     }, durationSeconds * 1000);
   };
 
-  const submitGuessHandler = useCallback(
-    async (dto: GuessDto) => {
-      if (!roomId) return;
-      await submitGuess(roomId, dto);
-    },
-    [roomId]
-  );
+  const submitGuessHandler = async (dto: GuessDto) => {
+    const res = await submitGuess(roomId, dto);
+
+  };
 
   const endGameHandler = useCallback(async () => {
     if (!roomId) return;
@@ -264,4 +261,3 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     </GameContext.Provider>
   );
 };
-
