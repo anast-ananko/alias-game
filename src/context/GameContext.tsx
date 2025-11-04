@@ -19,7 +19,7 @@ import {
 } from '../api/game';
 import type { GuessDto } from '../types/game';
 import { useParams } from 'react-router-dom';
-import type { GameTeam, Team } from '../types';
+import type { GameTeam } from '../types';
 
 export interface GameState {
   gameId: string;
@@ -110,7 +110,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const submitGuessHandler = async (dto: GuessDto) => {
-    const res = await submitGuess(roomId, dto);
+    await submitGuess(roomId, dto);
 
   };
 

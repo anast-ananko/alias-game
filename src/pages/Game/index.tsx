@@ -12,7 +12,7 @@ import {
   ListItemText,
   Chip,
 } from '@mui/material';
-import { useGame, type ClientGameState } from '../../context/GameContext';
+import { useGame } from '../../context/GameContext';
 import { useAuth } from '../../hooks/useAuth';
 import type { GameTeam } from '../../types';
 import Chat from '../../components/Chat';
@@ -31,11 +31,11 @@ const GamePage = () => {
   } = useGame();
 
   const [guess, setGuess] = useState('');
-  const [messages, setMessages] = useState<{ user: string; text: string }[]>(
+  const [messages] = useState<{ user: string; text: string }[]>(
     []
   );
   const [timer, setTimer] = useState<number>(0);
-  const [currentWord, setCurrentWord] = useState<string | null>(null);
+  // const [currentWord, setCurrentWord] = useState<string | null>(null);
 
   const currentTeamIndex = game?.currentTeamIndex ?? 0;
 
