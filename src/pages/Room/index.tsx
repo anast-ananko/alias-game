@@ -71,6 +71,11 @@ const RoomPage: FC = () => {
       setRoom(updatedRoom);
     });
 
+    socket.on('room:started', ({ room: updatedRoom }) => {
+      setRoom(updatedRoom);
+      navigate(`/room/${id}/game`);
+    });
+
     socket.on('ws-error', console.error);
 
     return () => {
