@@ -2,7 +2,7 @@ import axios from 'axios';
 // import { APP_ENV } from '../config';
 
 // const baseURL = APP_ENV.API_URL;
-const baseURL = 'http://localhost:3000';
+const baseURL = 'https://alias-game-q2g6.onrender.com';
 
 
 // use client for protected routes
