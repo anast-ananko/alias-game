@@ -165,18 +165,24 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     if (!game) return;
-    const currentIndex = Number(
-      game.expectedTeamId
-        ? game.teams.findIndex((t) => t.id === game.expectedTeamId)
-        : 0
-    );
+
+    const currentIndex = game.expectedTeamId
+      ? game.teams.findIndex((t) => t.id === game.expectedTeamId)
+      : 0;
+
+    if (game.currentRound === 0) return;
 
     const allTeamsPlayed =
-      game.turn === null && currentIndex === 0 && game.currentRound > 0;
+      game.turn === null &&
+      currentIndex === 0 &&
+      game.expectedTeamId === game.teams[0].id;
+
     setGame((prev) =>
-      prev ? { ...prev, allTeamsPlayedInRound: allTeamsPlayed } : prev
+      prev && prev.allTeamsPlayedInRound !== allTeamsPlayed
+        ? { ...prev, allTeamsPlayed }
+        : prev
     );
-  }, [game?.expectedTeamId, game?.turn]);
+  }, [game?.expectedTeamId, game?.turn, game?.currentRound]);
 
   useEffect(() => {
     if (!id) return;

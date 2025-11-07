@@ -144,7 +144,9 @@ const GamePage = () => {
         <Button
           variant="contained"
           onClick={handleStartRound}
-          disabled={!game?.allTeamsPlayedInRound}
+          disabled={
+            !game?.allTeamsPlayedInRound || myTeamId !== game.teams[0].id // только первая команда может начинать новый раунд
+          }
         >
           Start Round
         </Button>
