@@ -11,7 +11,6 @@ import {
   getGame,
   startRound,
   startTurn,
-  endTurn,
   submitGuess,
   // submitResult,
   scoreboard,
@@ -28,16 +27,23 @@ export interface GameState {
   maxRounds: number;
   isFinished: boolean;
   teams: GameTeam[];
+  turn: {
+    teamId: string | null;
+    round: number | null;
+    endsAt: Date | null;
+    wordId?: string | null;
+  } | null;
+  expectedTeamId: string | null;
 }
 
 export interface ClientGameState extends GameState {
-  currentTeamIndex: number | null;
-  turn?: {
-    teamId: string;
-    endsAt: string;
+  currentWord?: string | null;
+  lastGuessResult?: {
+    result: 'correct' | 'forbidden' | 'skip';
+    delta: number;
+    newScore: number;
   } | null;
-  currentWord?: string;
-  allTeamsPlayedInRound?: boolean;
+  allTeamsPlayedInRound: boolean;
 }
 
 interface GameContextValue {
@@ -66,14 +72,29 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
 
   const [game, setGame] = useState<ClientGameState | null>(null);
 
+  useEffect(() => {
+    if (!game) return;
+
+    const currentIndex = Number(
+      game.expectedTeamId
+        ? game.teams.findIndex((t) => t.id === game.expectedTeamId)
+        : 0
+    );
+
+    const allTeamsPlayed =
+      game.turn === null && currentIndex === 0 && game.currentRound > 0;
+
+    setGame((prev) =>
+      prev ? { ...prev, allTeamsPlayedInRound: allTeamsPlayed } : prev
+    );
+  }, [game?.expectedTeamId, game?.turn]);
+
   const fetchGameHandler = useCallback(async () => {
     if (!roomId) return;
     const res = await getGame(roomId);
     setGame({
       ...res,
-      currentTeamIndex: 0,
-      turn: null,
-      currentWord: undefined,
+      currentWord: null,
       allTeamsPlayedInRound: false,
     });
   }, [roomId]);
@@ -85,33 +106,55 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   }, [roomId, game]);
 
   const startRoundHandler = async () => {
-    await startRound(roomId);
+    const res = await startRound(roomId);
 
     setGame((prev) =>
       prev
         ? {
             ...prev,
-            currentTeamIndex: 0,
+            currentRound: res.currentRound,
+            maxRounds: res.maxRounds,
             turn: null,
+            currentWord: null,
+            allTeamsPlayedInRound: false,
+            lastGuessResult: null,
           }
         : prev
     );
   };
 
   const startNextTurn = async (teamId: string, durationSeconds: number) => {
-    await startTurn(roomId, {
+    const res = await startTurn(roomId, {
       teamId: String(teamId),
       durationSeconds,
     });
 
-    setTimeout(async () => {
-      await endTurn(roomId, teamId);
-    }, durationSeconds * 1000);
+    setGame((prev) =>
+      prev
+        ? {
+            ...prev,
+            turn: { teamId: res.teamId, endsAt: res.endsAt, round: res.round },
+            currentWord: res.word?.text ?? null,
+          }
+        : prev
+    );
   };
 
   const submitGuessHandler = async (dto: GuessDto) => {
-    await submitGuess(roomId, dto);
+    const res = await submitGuess(roomId, dto);
+    console.log('guess result:', res);
 
+    setGame((prev) =>
+      prev
+        ? {
+            ...prev,
+            currentWord: res.currentWord?.text ?? null,
+            teams: prev.teams.map((t) =>
+              t.id === dto.teamId ? { ...t, score: res.newScore } : t
+            ),
+          }
+        : prev
+    );
   };
 
   const endGameHandler = useCallback(async () => {
@@ -120,7 +163,27 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     setGame(null);
   }, [roomId]);
 
-  // --- SOCKET EVENTS ---
+  useEffect(() => {
+    if (!game) return;
+    const currentIndex = Number(
+      game.expectedTeamId
+        ? game.teams.findIndex((t) => t.id === game.expectedTeamId)
+        : 0
+    );
+
+    const allTeamsPlayed =
+      game.turn === null && currentIndex === 0 && game.currentRound > 0;
+    setGame((prev) =>
+      prev ? { ...prev, allTeamsPlayedInRound: allTeamsPlayed } : prev
+    );
+  }, [game?.expectedTeamId, game?.turn]);
+
+  useEffect(() => {
+    if (!id) return;
+
+    socket.emit('room:join', { roomId: id });
+  }, [id]);
+
   useEffect(() => {
     socket.on('game:started', () => {
       setGame((prev) =>
@@ -128,62 +191,51 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       );
     });
 
-    // socket.on('game:round:started', ({ currentRound }) => {
-    //   setGame((prev) => (prev ? { ...prev, currentRound } : prev));
-    // });
-
-    // socket.on('game:turn:started', ({ teamId, endsAt }) => {
-    //   setGame((prev) =>
-    //     prev
-    //       ? {
-    //           ...prev,
-    //           turn: { teamId, endsAt },
-    //           status: 'in_turn',
-    //         }
-    //       : prev
-    //   );
-    // });
-
-    // socket.on('game:turn:ended', () => {
-    //   setGame((prev) =>
-    //     prev
-    //       ? { ...prev, turn: null, currentWord: undefined, status: 'started' }
-    //       : prev
-    //   );
-    // });
-
-    socket.on('game:round:started', ({ currentRound }) => {
+    socket.on('game:round:started', ({ round }) => {
       setGame((prev) =>
-        prev ? { ...prev, currentRound, allTeamsPlayedInRound: false } : prev
+        prev
+          ? { ...prev, currentRound: round, turn: null, currentWord: null }
+          : prev
       );
     });
 
-    socket.on('game:turn:started', ({ teamId, endsAt, currentTeamIndex }) => {
+    socket.on('game:round:completed', ({ round }) => {
+      setGame((prev) =>
+        prev
+          ? { ...prev, allTeamsPlayedInRound: true, currentRound: round }
+          : prev
+      );
+    });
+
+    socket.on('game:turn:started', ({ teamId, endsAt, round }) => {
       setGame((prev) =>
         prev
           ? {
               ...prev,
-              turn: { teamId, endsAt },
-              currentTeamIndex,
-              status: 'in_turn',
+              turn: { teamId, endsAt, round },
             }
           : prev
       );
     });
 
-    socket.on('game:turn:ended', ({ nextTeamIndex, allTeamsPlayedInRound }) => {
-      setGame((prev) =>
-        prev
-          ? {
-              ...prev,
-              turn: null,
-              currentTeamIndex: nextTeamIndex,
-              allTeamsPlayedInRound,
-              status: 'started',
-              currentWord: undefined,
-            }
-          : prev
-      );
+    socket.on('game:turn:ended', ({ teamId }) => {
+      setGame((prev) => {
+        if (!prev) return prev;
+
+        const currentIndex = prev.teams.findIndex((t) => t.id === teamId);
+        const nextTeamIndex = (currentIndex + 1) % prev.teams.length;
+        const expectedTeamId = prev.teams[nextTeamIndex]?.id ?? null;
+
+        const allTeamsPlayed = nextTeamIndex === 0;
+
+        return {
+          ...prev,
+          turn: null,
+          currentWord: null,
+          expectedTeamId,
+          allTeamsPlayedInRound: allTeamsPlayed,
+        };
+      });
     });
 
     socket.on('game:ended', ({ finalScores }) => {
@@ -231,15 +283,18 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       );
     });
 
+    socket.on('game:wordResultSubmitted', ({ teamId, result, delta }) => {
+      console.log('word result', teamId, result, delta);
+    });
+
     return () => {
-      socket.off('game:started');
       socket.off('game:round:started');
       socket.off('game:turn:started');
       socket.off('game:turn:ended');
       socket.off('game:score:updated');
-      socket.off('game:ended');
+      socket.off('game:wordResultSubmitted');
     };
-  }, [roomId]);
+  }, [id]);
 
   useEffect(() => {
     fetchGameHandler();

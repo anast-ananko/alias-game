@@ -85,3 +85,8 @@ export interface ChatMessage {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface Word {
+  text: string;
+  category: string;
+}

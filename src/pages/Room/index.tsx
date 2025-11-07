@@ -273,6 +273,10 @@ const RoomPage: FC = () => {
       </Paper>
       <Divider sx={{ my: 2 }} />
 
+      <Button variant="contained" color="success" onClick={handleStartGame}>
+        Start
+      </Button>
+
       {userId && (
         <Box sx={{ display: 'flex', mb: 2 }}>
           <Chat roomId={room._id} />
@@ -287,10 +291,6 @@ const RoomPage: FC = () => {
       >
         Start
       </Button> */}
-
-      <Button variant="contained" color="success" onClick={handleStartGame}>
-        Start
-      </Button>
     </Container>
   );
 };

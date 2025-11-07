@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import {
   Container,
   Box,
@@ -12,36 +12,29 @@ import {
   ListItemText,
   Chip,
 } from '@mui/material';
+
 import { useGame } from '../../context/GameContext';
 import { useAuth } from '../../hooks/useAuth';
-import type { GameTeam } from '../../types';
 import Chat from '../../components/Chat';
 
 const GamePage = () => {
   const { id: roomId } = useParams<{ id: string }>();
-  const navigate = useNavigate();
 
   const { user } = useAuth();
-  const {
-    game,
-    startRoundHandler,
-    startNextTurn,
-    submitGuessHandler,
-    endGameHandler,
-  } = useGame();
+  const { game, startRoundHandler, startNextTurn, submitGuessHandler } =
+    useGame();
 
   const [guess, setGuess] = useState('');
-  const [messages] = useState<{ user: string; text: string }[]>(
-    []
-  );
+  const [messages] = useState<{ user: string; text: string }[]>([]);
   const [timer, setTimer] = useState<number>(0);
   // const [currentWord, setCurrentWord] = useState<string | null>(null);
 
-  const currentTeamIndex = game?.currentTeamIndex ?? 0;
+  const currentTeam = game?.teams.find((t) => t.id === game?.turn?.teamId);
+  const isMyTurn = !!user && currentTeam?.players.includes(user._id);
 
-  const currentTeam: GameTeam | undefined = game?.teams[currentTeamIndex];
-
-  const isMyTurn = !!user && !!currentTeam?.players.some((p) => p === user._id);
+  const myTeamId = game?.teams.find((team) =>
+    team.players?.some((p) => p === user?._id)
+  )?.id;
 
   useEffect(() => {
     if (!game?.turn?.endsAt) return;
@@ -64,16 +57,11 @@ const GamePage = () => {
   const handleStartTurn = async () => {
     if (!game) return;
 
-    const team = game.teams[game.currentTeamIndex || 0];
+    const team = game.teams.find((t) => t.id === game.expectedTeamId);
     if (!team) return;
 
     startNextTurn(team.id, 10);
   };
-
-  // const handleEndTurn = async () => {
-  //   if (!currentTeamIndex) return;
-  //   await endTurn(roomId, currentTeamIndex.toString());
-  // };
 
   const handleGuess = async () => {
     // if (!game?.turn?.teamId) return;
@@ -91,13 +79,6 @@ const GamePage = () => {
     });
 
     setGuess('');
-
-    console.log(1);
-  };
-
-  const handleEndGame = async () => {
-    await endGameHandler();
-    navigate(`/room/${roomId}`);
   };
 
   return (
@@ -149,7 +130,9 @@ const GamePage = () => {
             <Chip
               label={t.name}
               color={
-                t.id === currentTeamIndex.toString() ? 'primary' : 'default'
+                t.id === game?.expectedTeamId?.toString()
+                  ? 'primary'
+                  : 'default'
               }
             />
             <Typography>{t.score ?? 0}</Typography>
@@ -165,21 +148,20 @@ const GamePage = () => {
         >
           Start Round
         </Button>
-        {/* 
-        {isMyTurn && ( */}
+
         <>
-          <Button variant="contained" onClick={handleStartTurn}>
+          <Button
+            variant="contained"
+            onClick={handleStartTurn}
+            disabled={
+              !game ||
+              game.allTeamsPlayedInRound ||
+              game.expectedTeamId !== myTeamId
+            }
+          >
             Start Turn
           </Button>
-          {/* <Button variant="outlined" onClick={handleEndTurn}>
-            End Turn
-          </Button> */}
         </>
-        {/* )} */}
-
-        <Button color="error" variant="outlined" onClick={handleEndGame}>
-          End Game
-        </Button>
       </Box>
 
       <Paper sx={{ p: 2, my: 3, maxHeight: 250, overflowY: 'auto' }}>
