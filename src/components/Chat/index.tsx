@@ -71,6 +71,7 @@ export default function Chat({ roomId }: ChatProps) {
       <Box
         sx={{
           maxHeight: 300,
+          minHeight: 200,
           flex: 1,
           overflowY: 'auto',
           px: 2,
