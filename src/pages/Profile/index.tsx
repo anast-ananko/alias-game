@@ -1,19 +1,20 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Box,
   Button,
   Container,
   TextField,
   Typography,
-  Avatar,
   Paper,
   Divider,
   CircularProgress,
 } from '@mui/material';
+import AvatarWithHover from '../../components/AvatarWithHover';
 
 import { updateProfile, changePassword } from '../../api/auth';
 import axios from 'axios';
 import { useAuth } from '../../hooks/useAuth';
+import { userApi } from '../../api';
 
 const ProfilePage = () => {
   const { user, updateUser } = useAuth();
@@ -22,7 +23,6 @@ const ProfilePage = () => {
   const [editing, setEditing] = useState(false);
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
-  const [avatarUrl, setAvatarUrl] = useState('');
   const [passwords, setPasswords] = useState({
     currentPassword: '',
     newPassword: '',
@@ -33,12 +33,17 @@ const ProfilePage = () => {
   const [profileError, setProfileError] = useState('');
   const [profileSuccess, setProfileSuccess] = useState('');
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const isProfileChanged = username !== user?.username || email !== user?.email;
+  const isPasswordChanged =
+    passwords.currentPassword.trim() !== '' &&
+    passwords.newPassword.trim() !== '';
+
   useEffect(() => {
     if (!user) return;
 
     setUsername(user.username);
     setEmail(user.email);
-    setAvatarUrl(user.avatarUrl || '');
     setLoading(false);
   }, [user]);
 
@@ -47,7 +52,7 @@ const ProfilePage = () => {
     setProfileSuccess('');
 
     try {
-      const updatedUser = await updateProfile({ username, email, avatarUrl });
+      const updatedUser = await updateProfile({ username, email });
       updateUser(updatedUser);
       setEditing(false);
       setProfileSuccess('Profile updated successfully');
@@ -96,12 +101,52 @@ const ProfilePage = () => {
   const handleCancel = (): void => {
     setUsername(user?.username ?? '');
     setEmail(user?.email ?? '');
-    setAvatarUrl(user?.avatarUrl ?? '');
 
     setProfileError('');
     setProfileSuccess('');
 
     setEditing(false);
+  };
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      const response = await userApi.updateAvatar(formData);
+      const newAvatarUrl = response.data.avatarUrl;
+
+      if (user) updateUser({ ...user, avatarUrl: newAvatarUrl });
+      setProfileSuccess('Avatar updated successfully');
+    } catch (err) {
+      console.error('Error uploading avatar:', err);
+      setProfileError('Could not update avatar');
+    } finally {
+      // Reset input so user can re-upload same file if needed
+      event.target.value = '';
+    }
+  };
+
+  const handleDeleteAvatar = async () => {
+    if (!window.confirm('Are you sure you want to delete your avatar?')) return;
+
+    try {
+      await userApi.deleteAvatar(); // calls DELETE /users/me/update-avatar
+      if (user) updateUser({ ...user, avatarUrl: '' });
+      setProfileSuccess('Avatar deleted successfully');
+    } catch (err) {
+      console.error('Error deleting avatar:', err);
+      setProfileError('Could not delete avatar');
+    }
   };
 
   if (loading)
@@ -127,7 +172,20 @@ const ProfilePage = () => {
 
       <Paper sx={{ p: 3, mb: 3 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-          <Avatar src={avatarUrl} sx={{ width: 64, height: 64 }} />
+          <AvatarWithHover
+            avatarUrl={user.avatarUrl}
+            onClick={handleAvatarClick}
+            onDelete={handleDeleteAvatar}
+            size={64}
+          />
+          <input
+            type="file"
+            accept="image/*"
+            ref={fileInputRef}
+            style={{ display: 'none' }}
+            onChange={handleFileChange}
+          />
+
           <Box>
             <Typography variant="h6">{user.email}</Typography>
             <Typography variant="body2" color="text.secondary">
@@ -166,11 +224,6 @@ const ProfilePage = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
-            <TextField
-              label="Avatar URL"
-              value={avatarUrl}
-              onChange={(e) => setAvatarUrl(e.target.value)}
-            />
 
             {profileError && (
               <Typography color="error" variant="body2">
@@ -179,9 +232,14 @@ const ProfilePage = () => {
             )}
 
             <Box sx={{ display: 'flex', gap: 2 }}>
-              <Button variant="contained" onClick={handleSaveProfile}>
+              <Button
+                variant="contained"
+                onClick={handleSaveProfile}
+                disabled={!isProfileChanged}
+              >
                 Save
               </Button>
+
               <Button
                 variant="outlined"
                 color="secondary"
@@ -251,6 +309,7 @@ const ProfilePage = () => {
             variant="contained"
             color="primary"
             onClick={handleChangePassword}
+            disabled={!isPasswordChanged}
           >
             Change Password
           </Button>

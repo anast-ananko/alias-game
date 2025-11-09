@@ -59,7 +59,6 @@ export interface LoginDto {
 export interface UpdateProfileDto {
   username?: string;
   email?: string;
-  avatarUrl?: string;
 }
 
 export interface ChangePasswordDto {
