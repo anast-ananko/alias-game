@@ -12,6 +12,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    const accessToken = localStorage.getItem('accessToken');
+    if (!accessToken) return;
+
+    socket.auth = { token: accessToken };
+    if (!socket.connected) socket.connect();
+
+    socket.on('connect', () => {
+      console.log('Socket connected with id:', socket.id);
+    });
+
+    socket.on('connect_error', (err) => {
+      console.error('Socket connect error:', err);
+    });
+
+    return () => {
+      socket.off('connect');
+      socket.off('connect_error');
+    };
+  }, [user]); // run whenever user logs in or page loads with a logged-in user
+
   const fetchCurrentUser = async () => {
     const accessToken = localStorage.getItem('accessToken');
     if (!accessToken) {
@@ -44,6 +65,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(user);
       setError(null);
       localStorage.setItem('accessToken', accessToken);
+
+      // Set the token for socket auth
+      socket.auth = { token: accessToken };
+      if (!socket.connected) socket.connect();
     } catch (err) {
       if (axios.isAxiosError(err)) {
         const serverMessage = err.response?.data?.message;
@@ -67,6 +92,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(user);
       setError(null);
       localStorage.setItem('accessToken', accessToken);
+
+      // Set the token for socket auth
+      socket.auth = { token: accessToken };
+      if (!socket.connected) socket.connect();
     } catch (err) {
       if (axios.isAxiosError(err)) {
         const serverMessage = err.response?.data?.message;
