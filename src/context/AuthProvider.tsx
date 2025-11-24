@@ -43,7 +43,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setIsLoading(true);
     try {
       const data = await authApi.getProfile();
-      console.log(data);
       setUser(data);
     } catch (err: unknown) {
       if (err instanceof Error) {

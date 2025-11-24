@@ -39,7 +39,7 @@ export const submitResult = async (roomId: string, dto: SubmitResultDto) => {
   return response.data;
 };
 
-export const scoreboard = async (roomId: string) => {
+export const getScoreboard = async (roomId: string) => {
   const response = await client.get(`/rooms/${roomId}/game/scoreboard`);
   return response.data;
 };

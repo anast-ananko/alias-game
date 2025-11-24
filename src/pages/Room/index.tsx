@@ -47,6 +47,10 @@ const RoomPage: FC = () => {
     fetchRoom();
   }, [id]);
 
+  if (room?.phase === 'finished') {
+    navigate(`/room/${id}/game`);
+  }
+
   useEffect(() => {
     if (!id) return;
 
