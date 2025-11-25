@@ -106,7 +106,7 @@ const GamePage = () => {
     const team = game.teams.find((t) => t.id === game.expectedTeamId);
     if (!team) return;
 
-    await startNextTurn(team.id, 60);
+    await startNextTurn(team.id, 30);
   };
 
   const handleGuess = async () => {
